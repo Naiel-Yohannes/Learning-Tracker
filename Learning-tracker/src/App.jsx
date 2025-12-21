@@ -78,13 +78,35 @@ function App() {
     }
   }
 
+  const operation = (id, sign) => {
+    if(sign === '+'){
+      setAllTopic(allTopic.map(t => t.id === id && t.confidence < 5 ? {...t, confidence: t.confidence + 1} : t))
+    }
+    if(sign === '-'){
+      setAllTopic(allTopic.map(t => t.id === id && t.confidence > 0 ? {...t, confidence: t.confidence - 1} : t))
+    }
+  }
+
+  const hours = (id, sign) => {
+    if(sign === '+'){
+      setAllTopic(allTopic.map(t => t.id === id ? {...t, hoursStudied: t.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]} : t))
+    }
+    if(sign === '-'){
+      setAllTopic(allTopic.map(t => t.id === id ? {...t, hoursStudied: t.hoursStudied - 1, lastPracticed: new Date().toISOString().split('T')[0]} : t))
+    }
+  }
+
+  const remove = (id) => {
+    setAllTopic(allTopic.filter(t => t.id !== id))
+  }
+
   return (
     <>
       <h1>My Learning Tracker</h1>
       <p>Track your programming concept mastery</p>
 
       <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-      <FilterControls reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} />
+      <FilterControls remove={remove} hours={hours} operation={operation} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} />
     </>
   )
 }

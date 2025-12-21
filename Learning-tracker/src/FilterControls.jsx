@@ -1,4 +1,6 @@
-const FilterControls = ({toggle, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset}) => {
+import TopicItem from "./TopicItem"
+
+const FilterControls = ({toggle, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset, operation, hours, remove}) => {
     
     return(
         <div>
@@ -19,7 +21,7 @@ const FilterControls = ({toggle, filteredOnChange, filteredValue, filtered, chec
 
             
             {filtered.map(element => (
-                <p key={element.id}>{element.topic} {element.confidence} {element.id} {element.lastPracticed} <button onClick={() => toggle(element.id)}>{element.mastered ? "Mark as Unmastered" : "Mark as Mastered"}</button></p>
+                <TopicItem key={element.id} element={element} toggleOnClick={() => toggle(element.id)} operation={operation} hours={hours} remove={remove} />
             ))}
 
             <br />
