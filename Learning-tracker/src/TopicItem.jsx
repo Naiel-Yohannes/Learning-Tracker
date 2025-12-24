@@ -1,6 +1,18 @@
-const TopicItem = ({element, toggleOnClick, operation, hours, remove}) => {
+const TopicItem = ({element, toggleOnClick, decrementConfidence, incrementConfidence, hourChange, remove}) => {
     return(
-        <div><p>{element.topic} {element.confidence} <button onClick={() => operation(element.id, '+')}>+</button> <button onClick={() => hours(element.id, '-')}>-</button> {element.id} {element.hoursStudied} <button onClick={() => hours(element.id, '+')}>+</button> <button onClick={() => hours(element.id, '-')}>-</button> {element.lastPracticed} <button onClick={toggleOnClick}>{element.mastered ? "Mark as Unmastered" : "Mark as Mastered"}</button> <button onClick={() => remove(element.id)}>Delete</button></p></div>
+        <div>
+            <h4 className="topic">{element.topic}</h4> 
+            <p className="conf">{"███".repeat(element.confidence) + "░░░".repeat(5-element.confidence)}</p> 
+            <button onClick={() => incrementConfidence(element.id)} className="btnInc">+</button> 
+            <button onClick={() => decrementConfidence(element.id)} className="btnDec">-</button> 
+            <h4 className="hours">{element.hoursStudied}</h4> 
+            <h4 className="lastP">{element.lastPracticed} </h4>
+            <div className="controls">
+                <button onClick={() => hourChange(element.id)} className="hourChange" >+</button> 
+                <button onClick={toggleOnClick} className="toggle">{element.mastered ? "Mark as Unmastered" : "Mark as Mastered"}</button> 
+                <button onClick={() => remove(element.id, element.topic)} className="delete">Delete</button>    
+            </div>
+        </div>
     )
 }
 

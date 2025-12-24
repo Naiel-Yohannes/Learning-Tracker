@@ -1,6 +1,7 @@
 import { useState } from "react"
 import LearningForm from "./LearningForm"
 import FilterControls from "./FilterControls"
+import Stats from "./Stats"
 
 function App() {
   const [allTopic, setAllTopic] = useState([{
@@ -78,27 +79,35 @@ function App() {
     }
   }
 
-  const operation = (id, sign) => {
-    if(sign === '+'){
-      setAllTopic(allTopic.map(t => t.id === id && t.confidence < 5 ? {...t, confidence: t.confidence + 1} : t))
-    }
-    if(sign === '-'){
-      setAllTopic(allTopic.map(t => t.id === id && t.confidence > 0 ? {...t, confidence: t.confidence - 1} : t))
+  const incrementConfidence = (id) => {
+    setAllTopic(allTopic.map(e => e.id === id && e.confidence < 5 ? {...e, confidence: e.confidence + 1} : e))
+  }
+
+  const decrementConfidence = (id) => {
+    setAllTopic(allTopic.map(e => e.id === id && e.confidence > 0 ? {...e, confidence: e.confidence - 1} : e))
+  }
+
+  const hourChange = (id) => {
+    setAllTopic(allTopic.map(e => e.id === id ? {...e, hoursStudied: e.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]} : e))
+  }
+
+  const remove = (id, name) => {
+    if(window.confirm(`Delete ${name}`)){
+      setAllTopic(allTopic.filter(t => t.id !== id))
     }
   }
 
-  const hours = (id, sign) => {
-    if(sign === '+'){
-      setAllTopic(allTopic.map(t => t.id === id ? {...t, hoursStudied: t.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]} : t))
-    }
-    if(sign === '-'){
-      setAllTopic(allTopic.map(t => t.id === id ? {...t, hoursStudied: t.hoursStudied - 1, lastPracticed: new Date().toISOString().split('T')[0]} : t))
-    }
+  const total = {
+    totalTopic: allTopic.length,
+    totalHoursStudied: allTopic.length > 0 ? allTopic.reduce((acc, val) => acc + val.hoursStudied, 0) : 0,
+    averageConfidence: allTopic.length > 0 ? (allTopic.reduce((acc, val) => acc + val.confidence, 0) / allTopic.length).toFixed(1) : 'None',
+    masteredPercentage: allTopic.length > 0 
+    ? Math.round((allTopic.filter(t => t.mastered).length / allTopic.length) * 100)
+    : 0,
+    masteredCount: allTopic.filter(t => t.mastered).length,
+    mostPracticed: allTopic.length > 0 ? allTopic.reduce((acc, val) => acc.hoursStudied > val.hoursStudied ? acc : val, allTopic[0]) : {topic: 'None'}
   }
-
-  const remove = (id) => {
-    setAllTopic(allTopic.filter(t => t.id !== id))
-  }
+  
 
   return (
     <>
@@ -106,7 +115,8 @@ function App() {
       <p>Track your programming concept mastery</p>
 
       <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-      <FilterControls remove={remove} hours={hours} operation={operation} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} />
+      <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} />
+      <Stats total={total} />
     </>
   )
 }

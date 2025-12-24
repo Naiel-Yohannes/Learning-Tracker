@@ -1,6 +1,6 @@
 import TopicItem from "./TopicItem"
 
-const FilterControls = ({toggle, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset, operation, hours, remove}) => {
+const FilterControls = ({toggle, decrementConfidence, incrementConfidence, hourChange, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset, remove}) => {
     
     return(
         <div>
@@ -21,7 +21,7 @@ const FilterControls = ({toggle, filteredOnChange, filteredValue, filtered, chec
 
             
             {filtered.map(element => (
-                <TopicItem key={element.id} element={element} toggleOnClick={() => toggle(element.id)} operation={operation} hours={hours} remove={remove} />
+                <TopicItem key={element.id} element={element} toggleOnClick={() => toggle(element.id)} remove={remove} decrementConfidence={decrementConfidence} incrementConfidence={incrementConfidence} hourChange={hourChange}/>
             ))}
 
             <br />
