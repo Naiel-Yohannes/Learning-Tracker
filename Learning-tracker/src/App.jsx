@@ -45,8 +45,15 @@ function App() {
         lastPracticed: new Date().toISOString().split('T')[0]
       }
       
-
-      setAllTopic(allTopic.concat(newValue))
+      allTopic.some(e => { 
+        if(e.topic === newValue.topic){
+          alert(`${newValue.topic} already exists!`)
+          newValue.topic === ''
+        } else {
+          setAllTopic(allTopic.concat(newValue))
+        }
+      })
+      
       setConfidence(0)
       setNewTopic('')
     }
@@ -80,11 +87,34 @@ function App() {
   }
 
   const incrementConfidence = (id) => {
-    setAllTopic(allTopic.map(e => e.id === id && e.confidence < 5 ? {...e, confidence: e.confidence + 1} : e))
+    setAllTopic(allTopic.map(e => {
+      if(e.id === id) {
+        if(e.confidence < 5){
+          return {...e, confidence: e.confidence + 1}
+        } else {
+          alert('Confidence can not go above 5')
+          return {...e, confidence: 5}
+        }
+      } else {
+        return e
+      }
+    }))
+    
   }
 
   const decrementConfidence = (id) => {
-    setAllTopic(allTopic.map(e => e.id === id && e.confidence > 0 ? {...e, confidence: e.confidence - 1} : e))
+    setAllTopic(allTopic.map(e => {
+      if(e.id === id) {
+        if(e.confidence > 0){
+          return {...e, confidence: e.confidence - 1}
+        } else {
+          alert('Confidence can not go below 0')
+          return {...e, confidence: 0}
+        }
+      } else {
+        return e
+      }
+    }))
   }
 
   const hourChange = (id) => {
