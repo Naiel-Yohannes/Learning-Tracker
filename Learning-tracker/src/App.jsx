@@ -1,61 +1,58 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import LearningForm from "./LearningForm"
 import FilterControls from "./FilterControls"
 import Stats from "./Stats"
+import Topics from './Services/topics'
 
 function App() {
-  const [allTopic, setAllTopic] = useState([{
-    id: 1,
-    topic: "Array Methods",
-    hoursStudied: 12,
-    confidence: 0,
-    mastered: false,
-    lastPracticed: "2024-01-15"
-  },
-  {
-    id: 2,
-    topic: "React State",
-    hoursStudied: 5,
-    confidence: 0,
-    mastered: false,
-    lastPracticed: "2024-01-13"
-  },
-  {
-    id: 3,
-    topic: "useEffect Hook",
-    hoursStudied: 2,
-    confidence: 0,
-    mastered: false,
-    lastPracticed: "2024-01-08"
-  }])
+  const [allTopic, setAllTopic] = useState([])
   const [newTopic, setNewTopic] = useState('')
   const [confidence, setConfidence] = useState(0)
   const [filter, setFilter] = useState('')
   const [checked, setChecked] = useState(false)
   const [selected, setSelected] = useState('')
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    Topics.getItem()
+    .then(r => {
+      setAllTopic(r)
+      setLoading(false)
+    })
+    .catch(error => console.log(error))
+  }, [])
+  
   const add = () => {
     if(newTopic.trim()){
-      const newValue = {
-        id: Date.now(),
-        topic: newTopic,
-        hoursStudied: 0,
-        confidence: confidence,
-        mastered: false,
-        lastPracticed: new Date().toISOString().split('T')[0]
-      }
-      
-      allTopic.some(e => { 
-        if(e.topic === newValue.topic){
-          alert(`${newValue.topic} already exists!`)
-          newValue.topic === ''
+      const selected = allTopic.find(element => element.topic === newTopic)
+        if(selected){
+          if(window.confirm(`${newTopic} already exists!, Change the confidence instead?`)){
+            const newConfidence = {...selected, confidence: confidence}
+            Topics.updateItem(selected.id, newConfidence)
+            .then(r => {
+              setAllTopic(prev => prev.map(element => element.id === selected.id ? r : element))
+              setNewTopic('')
+              setConfidence(0)
+            })
+            .catch(error => console.log(error))
+          }
         } else {
-          setAllTopic(allTopic.concat(newValue))
-        }
-      })
-      
-      setConfidence(0)
-      setNewTopic('')
+          const newValue = {
+            topic: newTopic,
+            hoursStudied: 0,
+            confidence: confidence,
+            mastered: false,
+            lastPracticed: new Date().toISOString().split('T')[0]
+          }
+        
+          Topics.createItem(newValue)
+          .then(r => {
+            setAllTopic(prev => prev.concat(r))
+            setConfidence(0)
+            setNewTopic('')
+          })
+          .catch(error => console.log(error))
+      }
     }
   }
   const filteredTopic = allTopic.filter(t => {
@@ -73,7 +70,11 @@ function App() {
   }
 
   const toggleMastered = (id) => {
-    setAllTopic(allTopic.map(e => e.id === id ? {...e, mastered: !e.mastered} : e))
+    const masteredEl = allTopic.find(e => e.id === id)
+    const selectedMastered = {...masteredEl, mastered: !masteredEl.mastered}
+    Topics.updateItem(id, selectedMastered)
+    .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
+    .catch(error => console.log(error))
   }
 
   const confidenceOnChange = (e) => {
@@ -87,43 +88,54 @@ function App() {
   }
 
   const incrementConfidence = (id) => {
-    setAllTopic(allTopic.map(e => {
-      if(e.id === id) {
-        if(e.confidence < 5){
-          return {...e, confidence: e.confidence + 1}
-        } else {
+      const topic = allTopic.find(e => e.id === id)
+
+        if(topic.confidence >= 5){
           alert('Confidence can not go above 5')
-          return {...e, confidence: 5}
+          return
         }
-      } else {
-        return e
-      }
-    }))
-    
+          setAllTopic(prev => prev.map(el => el.id === id ? {...el, confidence: el.confidence + 1} : el) )
+          const selectedConf = {...topic, confidence: topic.confidence + 1}
+          Topics.updateItem(id, selectedConf)
+          .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
+          .catch(error => console.log(error))
   }
 
   const decrementConfidence = (id) => {
-    setAllTopic(allTopic.map(e => {
-      if(e.id === id) {
-        if(e.confidence > 0){
-          return {...e, confidence: e.confidence - 1}
-        } else {
+      const topic = allTopic.find(e => e.id === id)
+        if(topic.confidence <= 0){
           alert('Confidence can not go below 0')
-          return {...e, confidence: 0}
-        }
+          return
+        } 
+          setAllTopic(prev => prev.map(el => el.id === id ? {...el, confidence: el.confidence - 1} : el) )
+          const selectedConf = {...topic, confidence: topic.confidence - 1}
+          Topics.updateItem(id, selectedConf)
+          .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
+          .catch(error => console.log(error))
+  }
+
+  const hourChange = (id) => {
+    setAllTopic(prev => prev.map(e => {
+      if(e.id === id){         
+        const updated = {...e, hoursStudied: e.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]}
+        Topics.updateItem(id, updated)
+        .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
+        .catch(error => console.log(error))
+
+        return updated
       } else {
         return e
       }
     }))
-  }
-
-  const hourChange = (id) => {
-    setAllTopic(allTopic.map(e => e.id === id ? {...e, hoursStudied: e.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]} : e))
   }
 
   const remove = (id, name) => {
     if(window.confirm(`Delete ${name}`)){
-      setAllTopic(allTopic.filter(t => t.id !== id))
+      Topics.removeItem(id)
+      .then(() => {
+        setAllTopic(prev => prev.filter(e => e.id !== id))
+      })
+      .catch(error => console.log(error))
     }
   }
 
@@ -145,7 +157,7 @@ function App() {
       <p>Track your programming concept mastery</p>
 
       <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-      <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} />
+      <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} />
       <Stats total={total} />
     </>
   )

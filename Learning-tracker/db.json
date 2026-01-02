@@ -1,0 +1,28 @@
+{
+  "topics": [
+    {
+      "id": "1",
+      "topic": "Array Methods",
+      "hoursStudied": 15,
+      "confidence": 3,
+      "mastered": false,
+      "lastPracticed": "2025-12-28"
+    },
+    {
+      "id": "2",
+      "topic": "React State",
+      "hoursStudied": 5,
+      "confidence": 3,
+      "mastered": false,
+      "lastPracticed": "2024-01-13"
+    },
+    {
+      "id": "3",
+      "topic": "useEffect Hook",
+      "hoursStudied": 2,
+      "confidence": 0,
+      "mastered": true,
+      "lastPracticed": "2024-01-08"
+    }
+  ]
+}
