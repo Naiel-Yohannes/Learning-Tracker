@@ -3,6 +3,7 @@ import LearningForm from "./LearningForm"
 import FilterControls from "./FilterControls"
 import Stats from "./Stats"
 import Topics from './Services/topics'
+import Notification from "./Notification"
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -12,6 +13,8 @@ function App() {
   const [checked, setChecked] = useState(false)
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
+  const [notify, setNotify] = useState(null)
+  const [timer, setTimer] = useState(null)
 
   useEffect(() => {
     Topics.getItem()
@@ -31,10 +34,14 @@ function App() {
             Topics.updateItem(selected.id, newConfidence)
             .then(r => {
               setAllTopic(prev => prev.map(element => element.id === selected.id ? r : element))
+              showNotification(`You have updated ${r.topic}`, 'success')
               setNewTopic('')
               setConfidence(0)
             })
-            .catch(error => console.log(error))
+            .catch(error => {
+              showNotification(`Error: ${error}`, 'error')
+              console.log(error)
+            })
           }
         } else {
           const newValue = {
@@ -48,10 +55,14 @@ function App() {
           Topics.createItem(newValue)
           .then(r => {
             setAllTopic(prev => prev.concat(r))
+            showNotification(`You have added ${r.topic}`, 'success')
             setConfidence(0)
             setNewTopic('')
           })
-          .catch(error => console.log(error))
+          .catch(error => {
+            showNotification('Error: Failed to add new name', 'error')
+            console.log(error)
+          })
       }
     }
   }
@@ -73,8 +84,14 @@ function App() {
     const masteredEl = allTopic.find(e => e.id === id)
     const selectedMastered = {...masteredEl, mastered: !masteredEl.mastered}
     Topics.updateItem(id, selectedMastered)
-    .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
-    .catch(error => console.log(error))
+    .then(r => {
+      setAllTopic(prev => prev.map(el => el.id === id ? r : el))
+      showNotification(`You have ${r.mastered ? 'mastered' : 'not mastered'} ${r.topic}`, 'success')
+    })
+    .catch(error => {
+      showNotification(`Error: ${error}`, 'error')
+      console.log(error)
+    })
   }
 
   const confidenceOnChange = (e) => {
@@ -134,9 +151,23 @@ function App() {
       Topics.removeItem(id)
       .then(() => {
         setAllTopic(prev => prev.filter(e => e.id !== id))
+        showNotification(`You removed ${name}`, 'success')
       })
-      .catch(error => console.log(error))
+      .catch(error => {
+        showNotification(`Error: ${error}`, 'error')
+        console.log(error)
+      })
     }
+  }
+
+  const showNotification = (message, success) => {
+    if(timer){
+      clearTimeout(timer)
+    }
+    setNotify({mes: message, type: success})
+    setTimer(setTimeout(() => {
+      setNotify(null)
+    }, 3000))
   }
 
   const total = {
@@ -155,7 +186,7 @@ function App() {
     <>
       <h1>My Learning Tracker</h1>
       <p>Track your programming concept mastery</p>
-
+      {notify && <Notification notify={notify} />}
       <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
       <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} />
       <Stats total={total} />
