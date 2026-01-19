@@ -1,5 +1,5 @@
 import axios from 'axios'
-const url = 'http://localhost:3001/api/topics'
+const url = '/api/topics'
 
 const getItem = () => {
     const request = axios.get(url)
