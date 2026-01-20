@@ -1,6 +1,7 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const {v4: uuidv4} = require('uuid')
 const app = express()
 
 app.use(express.static('dist'))
@@ -59,7 +60,7 @@ app.post('/api/topics', (req, res) => {
     }
     if(body.topic){
         const newTopic = {
-            id: String(Math.max(...topics.map(t => Number(t.id))) + 1),
+            id: uuidv4(),
             topic: body.topic,
             hoursStudied: body.hoursStudied,
             confidence: body.confidence,
@@ -75,21 +76,41 @@ app.post('/api/topics', (req, res) => {
 app.put('/api/topics/:id', (req, res) => {
     const body = req.body
     const id = req.params.id
-    const topic = topics.find(t => t.id === id)
-    const exists = typeof body.hoursStudied === 'number' && typeof body.confidence === 'number' && typeof body.mastered === 'boolean'
-    if(topic){
-        if(exists){
-            topics = topics.map(t => {
-                if(t.id === id) {
-                    return {...t, hoursStudied: body.hoursStudied, confidence: body.confidence, mastered: body.mastered, lastPracticed: new Date().toISOString().split('T')[0]} 
-                }
-                return t
-            })
-            return res.status(200).json(topics.find(t => t.id === id))
+    const topicIndex = topics.findIndex(t => t.id === id)
+    let updatedVal = {...topics[topicIndex]}
+    const confiExi = body.confidence !== undefined
+    const hourExi = body.hoursStudied !== undefined
+    const masExi = body.mastered !== undefined
+
+    if(topicIndex === -1){
+        return res.status(404).json({error: 'Not found'})
+    }
+        if(confiExi){
+            if(typeof body.confidence === 'number' && body.confidence >=0 && body.confidence <= 5){
+                updatedVal.confidence = body.confidence
+            } else {
+            return res.status(400).json({error: 'invalid input'})
+            }
         }
-        return res.status(400).end()
-    } else{
-    return res.status(404).end()}
+        if(hourExi){
+            if(typeof body.hoursStudied === 'number' && body.hoursStudied >=0){
+                updatedVal.hoursStudied = body.hoursStudied
+            } else {
+                return res.status(400).json({error: 'invalid input'})
+            }
+        }
+        if(masExi){
+            if(typeof body.mastered === 'boolean'){
+                updatedVal.mastered = body.mastered
+            } else {
+            return res.status(400).json({error: 'invalid input'})
+            }
+        }
+
+        updatedVal.lastPracticed = new Date().toISOString().split('T')[0]
+        topics[topicIndex] = updatedVal
+        return res.status(200).json(updatedVal)
+
 })
 
 app.delete('/api/topics/:id', (req, res) => {
