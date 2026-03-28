@@ -27,7 +27,7 @@ function App() {
   
   const add = () => {
     if(newTopic.trim()){
-      const selected = allTopic.find(element => element.topic === newTopic)
+      const selected = allTopic.find(element => element.topic.trim() === newTopic.trim())
         if(selected){
           if(window.confirm(`${newTopic} already exists!, Change the confidence instead?`)){
             const newConfidence = {...selected, confidence: confidence}
@@ -111,11 +111,15 @@ function App() {
           alert('Confidence can not go above 5')
           return
         }
-          setAllTopic(prev => prev.map(el => el.id === id ? {...el, confidence: el.confidence + 1} : el) )
           const selectedConf = {...topic, confidence: topic.confidence + 1}
+          const oldState = allTopic
+          setAllTopic(prev => prev.map(el => el.id === id ? selectedConf : el) )
           Topics.updateItem(id, selectedConf)
           .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
-          .catch(error => console.log(error))
+          .catch(error => {
+            showNotification(`Error: ${error}`, 'error')
+            setAllTopic(oldState)
+          })
   }
 
   const decrementConfidence = (id) => {
@@ -123,27 +127,28 @@ function App() {
         if(topic.confidence <= 0){
           alert('Confidence can not go below 0')
           return
-        } 
-          setAllTopic(prev => prev.map(el => el.id === id ? {...el, confidence: el.confidence - 1} : el) )
+        }
           const selectedConf = {...topic, confidence: topic.confidence - 1}
+          const oldState = allTopic
+          setAllTopic(prev => prev.map(el => el.id === id ? selectedConf : el) )
           Topics.updateItem(id, selectedConf)
-          .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
-          .catch(error => console.log(error))
+          .catch(error => {
+            showNotification(`Error: ${error}`, 'error')
+            setAllTopic(oldState)
+          })
   }
 
   const hourChange = (id) => {
-    setAllTopic(prev => prev.map(e => {
-      if(e.id === id){         
-        const updated = {...e, hoursStudied: e.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]}
-        Topics.updateItem(id, updated)
-        .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
-        .catch(error => console.log(error))
-
-        return updated
-      } else {
-        return e
-      }
-    }))
+    const topic = allTopic.find(e => e.id === id)
+    const updated = {...topic, hoursStudied: topic.hoursStudied + 1, lastPracticed: new Date().toISOString().split('T')[0]}
+    const oldState = allTopic
+    setAllTopic(prev => prev.map(p => p.id === id ? updated : p))
+    Topics.updateItem(id, updated)
+    .catch(error => {
+      showNotification(`Error: ${error}`, 'error')
+      setAllTopic(oldState)
+    })
+    
   }
 
   const remove = (id, name) => {
