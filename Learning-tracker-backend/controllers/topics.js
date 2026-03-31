@@ -50,7 +50,7 @@ topicsRouter.put('/api/topics/:id', userExtractor, topicsLimiter, async(req, res
             return res.status(404).json({error: 'this topic doesnt exist'})
         }
 
-        if(selectedTopic.creator.id.toString() !== req.user._id.toString()){
+        if(selectedTopic.creator.toString() !== req.user._id.toString()){
             return res.status(403).json({error: 'only the creator can update this topic'})
         }
 
@@ -76,7 +76,7 @@ topicsRouter.delete('/api/topics/:id', userExtractor, topicsLimiter, async(req, 
             return res.status(404).json({error: 'this topic doesnt exist'})
         }
 
-        if(selectedTopic.creator.id.toString() !== req.user._id.toString()){
+        if(selectedTopic.creator.toString() !== req.user._id.toString()){
             return res.status(403).json({error: 'only the creator can delete this topic'})
         }
 

@@ -10,7 +10,7 @@ const { info, errorInfo } = require('./utils/logger')
 const topicsRouter = require('./controllers/topics')
 const { errorHandler } = require('./middleware/errorHandler')
 
-const mongodb_uri = process.env.MONGODB_URI
+const mongodb_uri = process.env.NODE_ENV==='test' ? process.env.TEST_MONGODB_URI : process.env.MONGODB_URI
 mongoose.connect(mongodb_uri, {family:4}).then(() => {
     info('successfully connected to mongodb')
 }).catch((err) => {
