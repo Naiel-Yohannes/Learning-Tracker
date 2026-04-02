@@ -4,6 +4,8 @@ import FilterControls from "./FilterControls"
 import Stats from "./Stats"
 import Topics from './Services/topics'
 import Notification from "./Notification"
+import LoginForm from "./LoginForm"
+import loginServices from './Services/login'
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -15,14 +17,28 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [notify, setNotify] = useState(null)
   const [timer, setTimer] = useState(null)
+  const [user, setUser] = useState(null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   useEffect(() => {
-    Topics.getItem()
-    .then(r => {
-      setAllTopic(r)
-      setLoading(false)
-    })
-    .catch(error => console.log(error))
+    if(user) {
+      Topics.getItem()
+      .then(r => {
+        setAllTopic(r)
+        setLoading(false)
+      })
+      .catch(error => console.log(error))
+    }
+  }, [user])
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('loggedInUser')
+    if(savedUser){
+      const userToSave = JSON.parse(savedUser)
+      Topics.getToken(userToSave.token)
+      setUser({username: userToSave.username})
+    }
   }, [])
   
   const add = () => {
@@ -74,6 +90,9 @@ function App() {
     return searchAll && filterConfidence && filterToggled
   })
 
+  const activeFilter = filter !== '' || selected !== '' || checked
+
+
   const reset = () => {
     setChecked(false)
     setSelected('')
@@ -82,15 +101,17 @@ function App() {
 
   const toggleMastered = (id) => {
     const masteredEl = allTopic.find(e => e.id === id)
+    const oldState = allTopic
     const selectedMastered = {...masteredEl, mastered: !masteredEl.mastered}
+    setAllTopic(prev => prev.map(el => el.id === id ? selectedMastered : el))
+    showNotification(`You have ${selectedMastered.mastered ? 'mastered' : 'not mastered'} ${selectedMastered.topic}`, 'success')
     Topics.updateItem(id, selectedMastered)
     .then(r => {
       setAllTopic(prev => prev.map(el => el.id === id ? r : el))
-      showNotification(`You have ${r.mastered ? 'mastered' : 'not mastered'} ${r.topic}`, 'success')
     })
     .catch(error => {
       showNotification(`Error: ${error}`, 'error')
-      console.log(error)
+      setAllTopic(oldState)
     })
   }
 
@@ -132,6 +153,7 @@ function App() {
           const oldState = allTopic
           setAllTopic(prev => prev.map(el => el.id === id ? selectedConf : el) )
           Topics.updateItem(id, selectedConf)
+          .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
           .catch(error => {
             showNotification(`Error: ${error}`, 'error')
             setAllTopic(oldState)
@@ -144,6 +166,7 @@ function App() {
     const oldState = allTopic
     setAllTopic(prev => prev.map(p => p.id === id ? updated : p))
     Topics.updateItem(id, updated)
+    .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
     .catch(error => {
       showNotification(`Error: ${error}`, 'error')
       setAllTopic(oldState)
@@ -175,6 +198,34 @@ function App() {
     }, 3000))
   }
 
+  const loginHandler = async(e) => {
+    e.preventDefault()
+    if(username.trim() && password.trim()){
+      try{
+        const returnedUser = await loginServices.userLoggin({username, password})
+        Topics.getToken(returnedUser.token)
+        localStorage.setItem('loggedInUser', JSON.stringify(returnedUser))
+        setUser({username: returnedUser.username})
+        setUsername('')
+        setPassword('')
+      }catch(error) {
+        showNotification('wrong credentials', 'error')
+        setUsername('')
+        setPassword('')
+      }
+    }else{
+      showNotification('Ensert both username and password', 'error')
+      setUsername('')
+      setPassword('')
+    }
+  }
+
+  const loggout = () => {
+    localStorage.removeItem('loggedInUser')
+    setUser(null)
+    Topics.getToken(null)
+  }
+
   const total = {
     totalTopic: allTopic.length,
     totalHoursStudied: allTopic.length > 0 ? allTopic.reduce((acc, val) => acc + val.hoursStudied, 0) : 0,
@@ -189,12 +240,22 @@ function App() {
 
   return (
     <>
-      <h1>My Learning Tracker</h1>
-      <p>Track your programming concept mastery</p>
-      {notify && <Notification notify={notify} />}
-      <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-      <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} />
-      <Stats total={total} />
+      {user === null ? 
+        <div>
+          {notify && <Notification notify={notify} />}
+          <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
+        </div>
+        :
+        <div>
+          <h1>My Learning Tracker</h1>
+          <p>Track your programming concept mastery</p>
+          {notify && <Notification notify={notify} />}
+          <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
+          <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
+          {allTopic.length > 0 ? <Stats total={total} /> : null}
+          <button onClick={loggout}>loggout</button>
+        </div>
+      }
     </>
   )
 }

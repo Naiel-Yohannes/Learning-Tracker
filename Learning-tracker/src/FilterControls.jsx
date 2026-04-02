@@ -1,6 +1,6 @@
 import TopicItem from "./TopicItem"
 
-const FilterControls = ({load, toggle, decrementConfidence, incrementConfidence, hourChange, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset, remove}) => {
+const FilterControls = ({load, toggle, decrementConfidence, incrementConfidence, hourChange, filteredOnChange, filteredValue, filtered, checked, checkOnChange, selected, selectedOnChange, reset, remove, activeFilter}) => {
     
     return(
         <div>
@@ -19,6 +19,8 @@ const FilterControls = ({load, toggle, decrementConfidence, incrementConfidence,
             <br />
             Search: <input type="text" onChange={filteredOnChange} value={filteredValue} />
 
+            <br />
+            {activeFilter ? <button onClick={reset}>Reset filter</button> : null}
             
             {load ?
             <div>Loading</div>
@@ -26,8 +28,7 @@ const FilterControls = ({load, toggle, decrementConfidence, incrementConfidence,
                 <TopicItem key={element.id} element={element} toggleOnClick={() => toggle(element.id)} remove={remove} decrementConfidence={decrementConfidence} incrementConfidence={incrementConfidence} hourChange={hourChange}/>
             ))}
 
-            <br />
-            <button onClick={reset}>Reset filter</button>
+            
         </div>
     )
 }

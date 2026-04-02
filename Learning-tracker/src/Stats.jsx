@@ -1,5 +1,3 @@
-import RelativeTime from "./RelativeTime"
-
 const Stats = ({total}) => {
     return(
         <div>
