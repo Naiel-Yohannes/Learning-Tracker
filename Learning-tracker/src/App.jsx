@@ -6,6 +6,8 @@ import Topics from './Services/topics'
 import Notification from "./Notification"
 import LoginForm from "./LoginForm"
 import loginServices from './Services/login'
+import UserServices from './Services/user'
+import RegisterForm from "./RegisterForm"
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -20,6 +22,11 @@ function App() {
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [registerUsername, setRegisterUsername] = useState('')
+  const [registerName, setRegisterName] = useState('')
+  const [registerPassword, setRegisterPassword] = useState('')
+  const [showRegister, setShowRegister] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
 
   useEffect(() => {
     if(user) {
@@ -55,7 +62,7 @@ function App() {
               setConfidence(0)
             })
             .catch(error => {
-              showNotification(`Error: ${error}`, 'error')
+              showNotification(`Error: ${error.response?.data?.error}`, 'error')
               console.log(error)
             })
           }
@@ -110,7 +117,7 @@ function App() {
       setAllTopic(prev => prev.map(el => el.id === id ? r : el))
     })
     .catch(error => {
-      showNotification(`Error: ${error}`, 'error')
+      showNotification(`Error: ${error.response?.data?.error}`, 'error')
       setAllTopic(oldState)
     })
   }
@@ -138,7 +145,7 @@ function App() {
           Topics.updateItem(id, selectedConf)
           .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
           .catch(error => {
-            showNotification(`Error: ${error}`, 'error')
+            showNotification(`Error: ${error.response?.data?.error}`, 'error')
             setAllTopic(oldState)
           })
   }
@@ -155,7 +162,7 @@ function App() {
           Topics.updateItem(id, selectedConf)
           .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
           .catch(error => {
-            showNotification(`Error: ${error}`, 'error')
+            showNotification(`Error: ${error.response?.data?.error}`, 'error')
             setAllTopic(oldState)
           })
   }
@@ -168,7 +175,7 @@ function App() {
     Topics.updateItem(id, updated)
     .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
     .catch(error => {
-      showNotification(`Error: ${error}`, 'error')
+      showNotification(`Error: ${error.response?.data?.error}`, 'error')
       setAllTopic(oldState)
     })
     
@@ -182,7 +189,7 @@ function App() {
         showNotification(`You removed ${name}`, 'success')
       })
       .catch(error => {
-        showNotification(`Error: ${error}`, 'error')
+        showNotification(`Error: ${error.response?.data?.error}`, 'error')
         console.log(error)
       })
     }
@@ -198,6 +205,27 @@ function App() {
     }, 3000))
   }
 
+  const registerFormHandler = async(e) => {
+    e.preventDefault()
+
+    try{
+      const newUser = await UserServices.registerUser({username: registerUsername, name: registerName, password: registerPassword})
+      const logginUserIn = await loginServices.userLoggin({username: newUser.username, password: registerPassword})
+      Topics.getToken(logginUserIn.token)
+      localStorage.setItem('loggedInUser', JSON.stringify(logginUserIn))
+      setUser({username: logginUserIn.username, name: logginUserIn.name})
+      setRegisterUsername('')
+      setRegisterName('')
+      setRegisterPassword('')
+      setShowRegister(false)
+    } catch(error) {
+      showNotification(error.response?.data?.error || 'Registration failed', 'error')
+      setRegisterUsername('')
+      setRegisterName('')
+      setRegisterPassword('')
+    }
+  }
+
   const loginHandler = async(e) => {
     e.preventDefault()
     if(username.trim() && password.trim()){
@@ -208,13 +236,14 @@ function App() {
         setUser({username: returnedUser.username})
         setUsername('')
         setPassword('')
+        setShowLogin(false)
       }catch(error) {
         showNotification('wrong credentials', 'error')
         setUsername('')
         setPassword('')
       }
     }else{
-      showNotification('Ensert both username and password', 'error')
+      showNotification(error.response?.data?.error || 'Login failed', 'error')
       setUsername('')
       setPassword('')
     }
@@ -243,7 +272,22 @@ function App() {
       {user === null ? 
         <div>
           {notify && <Notification notify={notify} />}
-          <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
+          {!showLogin && !showRegister && 
+          <div>
+            <h1>Welcome to "My Learning Tracker", your number 1 choise for tracking your study progress!</h1>
+            <h4>If you are new to the app you can click "Create new account" to get started or if you already have an account you can login to your rxisting account by clicking "Login"</h4>
+            <button onClick={() => setShowRegister(true)}>Create new account</button>
+            <button onClick={() => setShowLogin(true)}>Login</button>
+          </div>
+          }
+          {showRegister && <div>
+            <RegisterForm registerFormHandler={registerFormHandler} setRegisterUsername={setRegisterUsername} registerUsername={registerUsername} registerName={registerName} setRegisterName={setRegisterName} registerPassword={registerPassword} setRegisterPassword={setRegisterPassword} /> 
+            <button onClick={() => setShowRegister(false)}>Back</button>
+          </div>}
+          {showLogin && <div>
+            <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
+            <button onClick={() => setShowLogin(false)}>Back</button>
+          </div>}
         </div>
         :
         <div>
