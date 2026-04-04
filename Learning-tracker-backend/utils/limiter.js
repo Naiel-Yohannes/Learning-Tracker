@@ -2,12 +2,12 @@ const rateLimit = require('express-rate-limit')
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 50
+    max: 20
 })
 
 const userLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20
+    max: 5
 })
 
 const topicsLimiter = rateLimit({
