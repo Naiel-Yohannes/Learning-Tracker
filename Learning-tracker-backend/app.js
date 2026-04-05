@@ -26,9 +26,9 @@ app.use(morgan('dev'))
 
 app.use(tokenExtractor)
 
-app.use('/', loginRouter)
-app.use('/', userRouter)
-app.use('/', topicsRouter)
+app.use('/api/login', loginRouter)
+app.use('/api/users', userRouter)
+app.use('/api/topics', topicsRouter)
 
 app.use(errorHandler)
 
