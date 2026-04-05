@@ -17,7 +17,6 @@ mongoose.connect(mongodb_uri, {family:4}).then(() => {
     errorInfo('unable to connect to mongodb', err.message)
 })
 
-app.use(express.static('dist'))
 app.use(express.json())
 app.use(morgan('dev'))
 
