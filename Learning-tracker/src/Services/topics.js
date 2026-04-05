@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from "./axiosInterceptor"
 const url = '/api/topics'
 
 let token = null
@@ -11,7 +11,7 @@ const getItem = () => {
     const config = {
         headers: {Authorization: token}
     }
-    const request = axios.get(url, config)
+    const request = api.get(url, config)
     return request.then(response => response.data)
     
 }
@@ -20,7 +20,7 @@ const createItem = (newObj) => {
     const config = {
         headers: {Authorization: token}
     }
-    const request = axios.post(url, newObj, config)
+    const request = api.post(url, newObj, config)
     return request.then(r => r.data)
 }
 
@@ -28,7 +28,7 @@ const updateItem = (id, newConf) => {
     const config = {
         headers: {Authorization: token}
     }
-    const request = axios.put(`${url}/${id}`, newConf, config)    
+    const request = api.put(`${url}/${id}`, newConf, config)    
     return request.then(r => r.data)
 }
 
@@ -36,7 +36,7 @@ const removeItem = (id) => {
     const config = {
         headers: {Authorization: token}
     }
-    const request = axios.delete(`${url}/${id}`, config)
+    const request = api.delete(`${url}/${id}`, config)
     return request.then(r => r.data)
 }
 

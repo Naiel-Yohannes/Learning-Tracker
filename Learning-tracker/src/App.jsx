@@ -47,6 +47,20 @@ function App() {
       setUser({username: userToSave.username})
     }
   }, [])
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      Topics.getToken(null)
+      setUser(null)
+      localStorage.removeItem('loggedInUser')
+    }
+
+    window.addEventListener('unauthorized', handleUnauthorized)
+
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized)
+    }
+  }, [])
   
   const add = () => {
     if(newTopic.trim()){
