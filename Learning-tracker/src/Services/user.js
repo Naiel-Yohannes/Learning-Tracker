@@ -1,5 +1,7 @@
 import api from "./axiosInterceptor"
-const url = '/api/users'
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+const url = `${baseUrl}/api/login`
 
 const registerUser = async(registererInfo) => {
     const response = await api.post(url, registererInfo)

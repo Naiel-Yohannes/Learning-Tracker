@@ -9,6 +9,7 @@ const mongoose = require('mongoose')
 const { info, errorInfo } = require('./utils/logger')
 const topicsRouter = require('./controllers/topics')
 const { errorHandler } = require('./middleware/errorHandler')
+const cors = require('cors')
 
 const mongodb_uri = process.env.NODE_ENV==='test' ? process.env.TEST_MONGODB_URI : process.env.MONGODB_URI
 mongoose.connect(mongodb_uri, {family:4}).then(() => {
@@ -18,6 +19,9 @@ mongoose.connect(mongodb_uri, {family:4}).then(() => {
 })
 
 app.use(express.json())
+app.use(cors({
+  origin: '*'
+}))
 app.use(morgan('dev'))
 
 app.use(tokenExtractor)

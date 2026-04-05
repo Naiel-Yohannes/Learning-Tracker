@@ -3,7 +3,7 @@ const Topic = require('../models/topic')
 const topicsRouter = require('express').Router()
 const {topicsLimiter} = require('../utils/limiter')
 
-topicsRouter.get('/api/topics', userExtractor, topicsLimiter, async(req, res, next) => {
+topicsRouter.get('/', userExtractor, topicsLimiter, async(req, res, next) => {
    try{
         const topics = await Topic.find({creator: req.user._id})
 
@@ -13,7 +13,7 @@ topicsRouter.get('/api/topics', userExtractor, topicsLimiter, async(req, res, ne
    }
 })
 
-topicsRouter.post('/api/topics', userExtractor, topicsLimiter, async(req, res, next) => {
+topicsRouter.post('/', userExtractor, topicsLimiter, async(req, res, next) => {
     try{
         const {topic, confidence, hoursStudied, mastered, lastPracticed} = req.body
         if(topic === undefined || confidence === undefined){
@@ -40,7 +40,7 @@ topicsRouter.post('/api/topics', userExtractor, topicsLimiter, async(req, res, n
     }
 })
 
-topicsRouter.put('/api/topics/:id', userExtractor, topicsLimiter, async(req, res, next) => {
+topicsRouter.put('/:id', userExtractor, topicsLimiter, async(req, res, next) => {
     try{
         const id = req.params.id
         const {topic, confidence, hoursStudied, mastered, lastPracticed} = req.body
@@ -67,7 +67,7 @@ topicsRouter.put('/api/topics/:id', userExtractor, topicsLimiter, async(req, res
     }
 })
 
-topicsRouter.delete('/api/topics/:id', userExtractor, topicsLimiter, async(req, res, next) => {
+topicsRouter.delete('/:id', userExtractor, topicsLimiter, async(req, res, next) => {
     try{
         const id = req.params.id
         const selectedTopic = await Topic.findById(id)

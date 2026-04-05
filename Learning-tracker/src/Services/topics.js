@@ -1,5 +1,7 @@
 import api from "./axiosInterceptor"
-const url = '/api/topics'
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+const url = `${baseUrl}/api/login`
 
 let token = null
 

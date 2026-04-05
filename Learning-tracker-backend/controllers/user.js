@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const validator = require('validator')
 const {userLimiter} = require('../utils/limiter')
 
-userRouter.post('/api/users', userLimiter, async(req, res, next) => {
+userRouter.post('/', userLimiter, async(req, res, next) => {
     try{
         const {username, name, password} = req.body
         if(!username || !name || !password){
