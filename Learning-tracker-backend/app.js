@@ -20,7 +20,7 @@ mongoose.connect(mongodb_uri, {family:4}).then(() => {
 
 app.use(express.json())
 app.use(cors({
-  origin: '*'
+  origin: 'https://learning-tracker-lac.vercel.app'
 }))
 app.use(morgan('dev'))
 
