@@ -8,6 +8,7 @@ import LoginForm from "./LoginForm"
 import loginServices from './Services/login'
 import UserServices from './Services/user'
 import RegisterForm from "./RegisterForm"
+import { Routes, Route, Link } from "react-router-dom"
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -25,8 +26,6 @@ function App() {
   const [registerUsername, setRegisterUsername] = useState('')
   const [registerName, setRegisterName] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
-  const [showRegister, setShowRegister] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
 
   useEffect(() => {
     if(user) {
@@ -257,7 +256,7 @@ function App() {
         setPassword('')
       }
     }else{
-      showNotification(error.response?.data?.error || 'Login failed', 'error')
+      showNotification('Login failed', 'error')
       setUsername('')
       setPassword('')
     }
@@ -283,37 +282,39 @@ function App() {
 
   return (
     <>
-      {user === null ? 
-        <div>
-          {notify && <Notification notify={notify} />}
-          {!showLogin && !showRegister && 
+      {notify && <Notification notify={notify} />}
+      <Routes>
+        <Route path="/" element={user === null ? 
           <div>
             <h1>Welcome to "My Learning Tracker", your number 1 choise for tracking your study progress!</h1>
             <h4>If you are new to the app you can click "Create new account" to get started or if you already have an account you can login to your rxisting account by clicking "Login"</h4>
-            <button onClick={() => setShowRegister(true)}>Create new account</button>
-            <button onClick={() => setShowLogin(true)}>Login</button>
+            <Link to="/register"><button>Create new account</button></Link>
+            <Link to="/login"><button>Login</button></Link>
+          </div> : 
+          <div>
+            <h1>My Learning Tracker</h1>
+            <p>Track your programming concept mastery</p>
+            <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
+            <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
+            {allTopic.length > 0 ? <Stats total={total} /> : null}
+            <button onClick={loggout}>loggout</button>
           </div>
-          }
-          {showRegister && <div>
+        } />
+        <Route path="/register" element={
+          user ? <Link to="/" /> :
+          <div>
             <RegisterForm registerFormHandler={registerFormHandler} setRegisterUsername={setRegisterUsername} registerUsername={registerUsername} registerName={registerName} setRegisterName={setRegisterName} registerPassword={registerPassword} setRegisterPassword={setRegisterPassword} /> 
-            <button onClick={() => setShowRegister(false)}>Back</button>
-          </div>}
-          {showLogin && <div>
+            <Link to="/"><button>Back</button></Link>
+          </div>
+        } />
+        <Route path="/login" element={
+          user ? <Link to="/" /> :
+          <div>
             <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
-            <button onClick={() => setShowLogin(false)}>Back</button>
-          </div>}
-        </div>
-        :
-        <div>
-          <h1>My Learning Tracker</h1>
-          <p>Track your programming concept mastery</p>
-          {notify && <Notification notify={notify} />}
-          <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-          <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
-          {allTopic.length > 0 ? <Stats total={total} /> : null}
-          <button onClick={loggout}>loggout</button>
-        </div>
-      }
+            <Link to="/"><button>Back</button></Link>
+          </div>
+        } />
+      </Routes>
     </>
   )
 }
