@@ -3,12 +3,12 @@ import LearningForm from "./LearningForm"
 import FilterControls from "./FilterControls"
 import Stats from "./Stats"
 import Topics from './Services/topics'
-import Notification from "./Notification"
 import LoginForm from "./LoginForm"
 import loginServices from './Services/login'
 import UserServices from './Services/user'
 import RegisterForm from "./RegisterForm"
 import { Routes, Route, Link, useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -18,8 +18,6 @@ function App() {
   const [checked, setChecked] = useState(false)
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
-  const [notify, setNotify] = useState(null)
-  const [timer, setTimer] = useState(null)
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -77,12 +75,12 @@ function App() {
             Topics.updateItem(selected.id, newConfidence)
             .then(r => {
               setAllTopic(prev => prev.map(element => element.id === selected.id ? r : element))
-              showNotification(`You have updated ${r.topic}`, 'success')
+              toast.success(`You have updated "${r.topic}"`)
               setNewTopic('')
               setConfidence(0)
             })
             .catch(error => {
-              showNotification(`Error: ${error.response?.data?.error}`, 'error')
+              toast.error(`Error: ${error.response?.data?.error}`)
               console.log(error)
             })
           }
@@ -98,12 +96,12 @@ function App() {
           Topics.createItem(newValue)
           .then(r => {
             setAllTopic(prev => prev.concat(r))
-            showNotification(`You have added ${r.topic}`, 'success')
+            toast.success(`You have added "${r.topic}"`)
             setConfidence(0)
             setNewTopic('')
           })
           .catch(error => {
-            showNotification('Error: Failed to add new name', 'error')
+            toast.error('Error: Failed to add new name')
             console.log(error)
           })
       }
@@ -131,13 +129,13 @@ function App() {
     const oldState = allTopic
     const selectedMastered = {...masteredEl, mastered: !masteredEl.mastered}
     setAllTopic(prev => prev.map(el => el.id === id ? selectedMastered : el))
-    showNotification(`You have ${selectedMastered.mastered ? 'mastered' : 'not mastered'} ${selectedMastered.topic}`, 'success')
+    toast.success(`You have ${selectedMastered.mastered ? 'mastered' : 'not mastered'} "${selectedMastered.topic}"`)
     Topics.updateItem(id, selectedMastered)
     .then(r => {
       setAllTopic(prev => prev.map(el => el.id === id ? r : el))
     })
     .catch(error => {
-      showNotification(`Error: ${error.response?.data?.error}`, 'error')
+      toast.error(`Error: ${error.response?.data?.error}`)
       setAllTopic(oldState)
     })
   }
@@ -147,7 +145,7 @@ function App() {
     if(value >= 0 && value <= 5){
       setConfidence(value)
     } else {
-      alert('Number should be less than 5 and grater than 0')
+      toast.error('Number should be less than 5 and grater than 0')
       setConfidence(0)
     }
   }
@@ -156,7 +154,7 @@ function App() {
       const topic = allTopic.find(e => e.id === id)
 
         if(topic.confidence >= 5){
-          alert('Confidence can not go above 5')
+          toast.error('Confidence can not go above 5')
           return
         }
           const selectedConf = {...topic, confidence: topic.confidence + 1}
@@ -165,7 +163,7 @@ function App() {
           Topics.updateItem(id, selectedConf)
           .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
           .catch(error => {
-            showNotification(`Error: ${error.response?.data?.error}`, 'error')
+            toast.error(`Error: ${error.response?.data?.error}`)
             setAllTopic(oldState)
           })
   }
@@ -173,7 +171,7 @@ function App() {
   const decrementConfidence = (id) => {
       const topic = allTopic.find(e => e.id === id)
         if(topic.confidence <= 0){
-          alert('Confidence can not go below 0')
+          toast.error('Confidence can not go below 0')
           return
         }
           const selectedConf = {...topic, confidence: topic.confidence - 1}
@@ -182,7 +180,7 @@ function App() {
           Topics.updateItem(id, selectedConf)
           .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
           .catch(error => {
-            showNotification(`Error: ${error.response?.data?.error}`, 'error')
+            toast.error(`Error: ${error.response?.data?.error}`)
             setAllTopic(oldState)
           })
   }
@@ -195,7 +193,7 @@ function App() {
     Topics.updateItem(id, updated)
     .then(r => setAllTopic(prev => prev.map(el => el.id === id ? r : el)))
     .catch(error => {
-      showNotification(`Error: ${error.response?.data?.error}`, 'error')
+      toast.error(`Error: ${error.response?.data?.error}`)
       setAllTopic(oldState)
     })
     
@@ -206,23 +204,13 @@ function App() {
       Topics.removeItem(id)
       .then(() => {
         setAllTopic(prev => prev.filter(e => e.id !== id))
-        showNotification(`You removed ${name}`, 'success')
+        toast.success(`You removed "${name}"`)
       })
       .catch(error => {
-        showNotification(`Error: ${error.response?.data?.error}`, 'error')
+        toast.error(`Error: ${error.response?.data?.error}`)
         console.log(error)
       })
     }
-  }
-
-  const showNotification = (message, success) => {
-    if(timer){
-      clearTimeout(timer)
-    }
-    setNotify({mes: message, type: success})
-    setTimer(setTimeout(() => {
-      setNotify(null)
-    }, 3000))
   }
 
   const registerFormHandler = async(e) => {
@@ -238,7 +226,7 @@ function App() {
       setRegisterName('')
       setRegisterPassword('')
     } catch(error) {
-      showNotification(error.response?.data?.error || 'Registration failed', 'error')
+      toast.error(error.response?.data?.error || 'Registration failed')
       setRegisterUsername('')
       setRegisterName('')
       setRegisterPassword('')
@@ -256,12 +244,12 @@ function App() {
         setUsername('')
         setPassword('')
       }catch(error) {
-        showNotification('wrong credentials', 'error')
+        toast.error('wrong credentials')
         setUsername('')
         setPassword('')
       }
     }else{
-      showNotification('Login failed', 'error')
+      toast.error('Login failed')
       setUsername('')
       setPassword('')
     }
@@ -299,7 +287,6 @@ function App() {
 
   return (
     <>
-      {notify && <Notification notify={notify} />}
       <Routes>
         <Route path="/" element={user === null ? 
           <div>
