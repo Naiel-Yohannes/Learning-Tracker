@@ -8,7 +8,7 @@ import LoginForm from "./LoginForm"
 import loginServices from './Services/login'
 import UserServices from './Services/user'
 import RegisterForm from "./RegisterForm"
-import { Routes, Route, Link } from "react-router-dom"
+import { Routes, Route, Link, useNavigate } from "react-router-dom"
 
 function App() {
   const [allTopic, setAllTopic] = useState([])
@@ -26,6 +26,7 @@ function App() {
   const [registerUsername, setRegisterUsername] = useState('')
   const [registerName, setRegisterName] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     if(user) {
@@ -37,6 +38,12 @@ function App() {
       .catch(error => console.log(error))
     }
   }, [user])
+
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     const savedUser = localStorage.getItem('loggedInUser')
@@ -230,7 +237,6 @@ function App() {
       setRegisterUsername('')
       setRegisterName('')
       setRegisterPassword('')
-      setShowRegister(false)
     } catch(error) {
       showNotification(error.response?.data?.error || 'Registration failed', 'error')
       setRegisterUsername('')
@@ -249,7 +255,6 @@ function App() {
         setUser({username: returnedUser.username})
         setUsername('')
         setPassword('')
-        setShowLogin(false)
       }catch(error) {
         showNotification('wrong credentials', 'error')
         setUsername('')
@@ -279,6 +284,18 @@ function App() {
     mostPracticed: allTopic.length > 0 ? allTopic.reduce((acc, val) => acc.hoursStudied > val.hoursStudied ? acc : val, allTopic[0]) : {topic: 'None'}
   }
   
+  const Home = () => {
+    return(
+      <div>
+            <h1>My Learning Tracker</h1>
+            <p>Track your programming concept mastery</p>
+            <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
+            <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
+            {allTopic.length > 0 ? <Stats total={total} /> : null}
+            <button onClick={loggout}>loggout</button>
+          </div>
+    )
+  }
 
   return (
     <>
@@ -290,29 +307,24 @@ function App() {
             <h4>If you are new to the app you can click "Create new account" to get started or if you already have an account you can login to your rxisting account by clicking "Login"</h4>
             <Link to="/register"><button>Create new account</button></Link>
             <Link to="/login"><button>Login</button></Link>
-          </div> : 
-          <div>
-            <h1>My Learning Tracker</h1>
-            <p>Track your programming concept mastery</p>
-            <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-            <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
-            {allTopic.length > 0 ? <Stats total={total} /> : null}
-            <button onClick={loggout}>loggout</button>
-          </div>
+          </div> : <Home/>
         } />
         <Route path="/register" element={
-          user ? <Link to="/" /> :
+          !user ?
           <div>
             <RegisterForm registerFormHandler={registerFormHandler} setRegisterUsername={setRegisterUsername} registerUsername={registerUsername} registerName={registerName} setRegisterName={setRegisterName} registerPassword={registerPassword} setRegisterPassword={setRegisterPassword} /> 
             <Link to="/"><button>Back</button></Link>
-          </div>
+          </div> : 
+          <Home/>
+
         } />
         <Route path="/login" element={
-          user ? <Link to="/" /> :
+          !user ?
           <div>
             <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
             <Link to="/"><button>Back</button></Link>
-          </div>
+          </div> :
+          <Home/>
         } />
       </Routes>
     </>
