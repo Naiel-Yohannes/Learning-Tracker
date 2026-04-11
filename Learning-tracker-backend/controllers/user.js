@@ -19,7 +19,7 @@ userRouter.post('/', userLimiter, async(req, res, next) => {
         const passwordHash = await bcrypt.hash(password, salt)
 
         const user = new User({
-            username,
+            username: username.toLowerCase(),
             name,
             passwordHash
         })

@@ -12,7 +12,7 @@ loginRouter.post('/', loginLimiter, async(req, res, next) => {
             return res.status(400).json({error : 'missing credentials'})
         }
 
-        const user = await User.findOne({username})
+        const user = await User.findOne({username: username.toLowerCase()})
         
         const correctPassword = user === null ? false : await bcrypt.compare(password, user.passwordHash)
 

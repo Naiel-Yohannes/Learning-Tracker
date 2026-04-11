@@ -68,7 +68,7 @@ function App() {
   
   const add = () => {
     if(newTopic.trim()){
-      const selected = allTopic.find(element => element.topic.trim() === newTopic.trim())
+      const selected = allTopic.find(element => element.topic.trim().toLowerCase() === newTopic.trim().toLowerCase())
         if(selected){
           if(window.confirm(`${newTopic} already exists!, Change the confidence instead?`)){
             const newConfidence = {...selected, confidence: confidence}
@@ -79,7 +79,7 @@ function App() {
               setNewTopic('')
               setConfidence(0)
             })
-            .catch(error => {
+            .catch(error => {              
               toast.error(`Error: ${error.response?.data?.error}`)
               console.log(error)
             })
@@ -101,8 +101,13 @@ function App() {
             setNewTopic('')
           })
           .catch(error => {
-            toast.error('Error: Failed to add new name')
-            console.log(error)
+            if(error.response?.data?.error === 'Topic validation failed: topic: Path `topic` (`as`, length 2) is shorter than the minimum allowed length (5).'){
+              const message = 'Topic must have atleast 5 characters'
+              toast.error(`Error: ${message}`)
+            }else {
+              toast.error(`Error: ${error.response?.data?.error}`)
+            }
+            
           })
       }
     }
@@ -244,7 +249,8 @@ function App() {
         setUsername('')
         setPassword('')
       }catch(error) {
-        toast.error('wrong credentials')
+        const message = error.response?.data?.error || 'Login failed'
+        toast.error(message)
         setUsername('')
         setPassword('')
       }
