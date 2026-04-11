@@ -272,46 +272,54 @@ function App() {
     mostPracticed: allTopic.length > 0 ? allTopic.reduce((acc, val) => acc.hoursStudied > val.hoursStudied ? acc : val, allTopic[0]) : {topic: 'None'}
   }
   
-  const Home = () => {
-    return(
-      <div>
-            <h1>My Learning Tracker</h1>
-            <p>Track your programming concept mastery</p>
-            <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
-            <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
-            {allTopic.length > 0 ? <Stats total={total} /> : null}
-            <button onClick={loggout}>loggout</button>
-          </div>
-    )
-  }
+  const homeContent = (
+    <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-900">My Learning Tracker</h1>
+        <p className="mt-1 text-slate-600">Track your programming concept mastery.</p>
+      </div>
+      <LearningForm onChange={e => setNewTopic(e.target.value)} value={newTopic} onClick={add} confidenceOnChange={confidenceOnChange} confidenceValue={confidence} />
+      <FilterControls remove={remove} hourChange={hourChange} incrementConfidence={incrementConfidence} decrementConfidence={decrementConfidence} reset={reset} selected={selected} selectedOnChange={e => setSelected(e.target.value)} toggle={toggleMastered} filtered={filteredTopic} filteredOnChange={e => setFilter(e.target.value)} filteredValue={filter} checked={checked} checkOnChange={e => setChecked(e.target.checked)} load={loading} activeFilter={activeFilter} />
+      {allTopic.length > 0 ? <Stats total={total} /> : null}
+      <button className="mt-6 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer" onClick={loggout}>Log out</button>
+    </div>
+  )
 
   return (
     <>
       <Routes>
         <Route path="/" element={user === null ? 
-          <div>
-            <h1>Welcome to "My Learning Tracker", your number 1 choise for tracking your study progress!</h1>
-            <h4>If you are new to the app you can click "Create new account" to get started or if you already have an account you can login to your rxisting account by clicking "Login"</h4>
-            <Link to="/register"><button>Create new account</button></Link>
-            <Link to="/login"><button>Login</button></Link>
-          </div> : <Home/>
+          <div className="mx-auto flex min-h-screen max-w-3xl items-center px-4 py-10 md:px-6">
+            <div className="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+              <h1 className="text-3xl font-bold text-slate-900">Welcome to My Learning Tracker</h1>
+              <p className="mt-3 text-slate-600">A simple way to track your study progress and confidence over time.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link to="/register"><button className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 cursor-pointer">Create new account</button></Link>
+                <Link to="/login"><button className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer">Login</button></Link>
+              </div>
+            </div>
+          </div> : homeContent
         } />
         <Route path="/register" element={
           !user ?
-          <div>
+          <div className="mx-auto flex min-h-screen max-w-xl items-center px-4 py-10 md:px-6">
+            <div className="w-full space-y-4">
             <RegisterForm registerFormHandler={registerFormHandler} setRegisterUsername={setRegisterUsername} registerUsername={registerUsername} registerName={registerName} setRegisterName={setRegisterName} registerPassword={registerPassword} setRegisterPassword={setRegisterPassword} /> 
-            <Link to="/"><button>Back</button></Link>
+            <Link to="/"><button className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer">Back</button></Link>
+            </div>
           </div> : 
-          <Home/>
+          homeContent
 
         } />
         <Route path="/login" element={
           !user ?
-          <div>
+          <div className="mx-auto flex min-h-screen max-w-xl items-center px-4 py-10 md:px-6">
+            <div className="w-full space-y-4">
             <LoginForm loginHandler={loginHandler} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
-            <Link to="/"><button>Back</button></Link>
+            <Link to="/"><button className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer">Back</button></Link>
+            </div>
           </div> :
-          <Home/>
+          homeContent
         } />
       </Routes>
     </>
